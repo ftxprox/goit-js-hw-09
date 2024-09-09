@@ -1,35 +1,57 @@
-const formData = {
-    email: "",
-    message: "",
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
+let formData = {
+  email: '',
+  message: '',
+};
+
+const form = document.querySelector('.feedback-form');
+
+try {
+  const saveData = localStorage.getItem('feedback-form-state');
+  if (saveData) {
+    formData = JSON.parse(saveData);
+
+    form.elements.email.value = formData.email || '';
+    form.elements.message.value = formData.message || '';
+  }
+} catch (error) {
+  console.error('Error parsing saved data from localStorage:', error);
 }
-const form = document.querySelector(".feedback-form");
-if(localStorage.getItem("feedback-form-state")) {
-    const parseData = JSON.parse(localStorage.getItem("feedback-form-state"));
-    form.elements.email.value = parseData.email;
-    form.elements.message.value = parseData.message;
-    formData.email = parseData.email;
-    formData.message = parseData.message;
+
+form.addEventListener('input', onInput);
+form.addEventListener('submit', onSubmit);
+
+function onInput(event) {
+  const { name, value } = event.target;
+  formData[name] = value.trim();
+
+  try {
+    localStorage.setItem('feedback-form-state', JSON.stringify(formData));
+  } catch (error) {
+    console.error('Error saving data to localStorage:', error);
+  }
 }
-const saveData = (event) => {
-    event.preventDefault();
-    formData.email = event.currentTarget.elements.email.value.trim();
-    formData.message = event.currentTarget.elements.message.value.trim();
-    localStorage.setItem("feedback-form-state", JSON.stringify(formData));
+
+function onSubmit(event) {
+  event.preventDefault();
+
+  const { email, message } = formData;
+
+  if (!email || !message) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  console.log(formData);
+
+  try {
+    localStorage.removeItem('feedback-form-state');
+  } catch (error) {
+    console.error('Error removing data from localStorage:', error);
+  }
+
+  form.reset();
+  formData = { email: '', message: '' };
 }
-form.addEventListener("input", saveData);
-const submitData = (event) => {
-    event.preventDefault();
-    const parseData = JSON.parse(localStorage.getItem("feedback-form-state"));
-    if(!parseData.email || !parseData.message) {
-        alert("Fill please all fields")
-    }
-    else {
-        console.log(formData);
-        localStorage.clear();
-        formData.email = "";
-        formData.message = "";
-        form.elements.email.value = "";
-        form.elements.message.value = "";
-    }
-}
-form.addEventListener("submit", submitData);
